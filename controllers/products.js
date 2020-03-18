@@ -4,9 +4,9 @@ const jwt = require("jsonwebtoken");
 class Products {
   async getProducts(req, res, next) {
     try {
-      const { token, id } = { ...body, ...query, ...params };
-      const jwtData = jwt.verify(token, process.env.JWT_KEY);
-      const products = await ProductsModel.find({ id, user_id: jwtData.id });
+      // const { token, id } = { ...body, ...query, ...params };
+      // const jwtData = jwt.verify(token, process.env.JWT_KEY);
+      const products = await ProductsModel.find({ });
 
       res.status(200).json({
         success: true,
