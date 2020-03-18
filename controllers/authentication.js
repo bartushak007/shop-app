@@ -57,8 +57,7 @@ class Auth {
     } catch (e) {
       return res.status(500).json({
         success: false,
-        error: "Server Error",
-        data: [process.env.JWT_KEY, process.env.PW]
+        error: "Server Error"
       });
     }
   }

@@ -4,7 +4,10 @@ const jwt = require("jsonwebtoken");
 class Products {
   async getProducts(req, res, next) {
     try {
-      const products = await ProductsModel.find({});
+      const { token, id } = { ...body, ...query, ...params };
+      const jwtData = jwt.verify(token, process.env.JWT_KEY);
+      const products = await ProductsModel.find({ id, user_id: jwtData.id });
+
       res.status(200).json({
         success: true,
         data: products
@@ -17,13 +20,43 @@ class Products {
     }
   }
 
-  async updateProduct(req, res, next) {}
+  async updateProduct(req, res, next) {
+    const { body, query, params } = req;
+    const { id, user_id } = { ...body, ...query, ...params };
+    try {
+      const product = await ProductsModel.find({ _id: id, user_id });
+      const updatedProduct = await ProductsModel.updateOne(
+        { _id: id, user_id },
+        {
+          ...product,
+          productName,
+          description,
+          urlImage,
+          quantity,
+          added,
+          characteristic,
+          price,
+          asset
+        }
+      );
+
+      res.status(200).json({
+        success: true,
+        data: product
+      });
+    } catch (e) {
+      return res.status(500).json({
+        success: false,
+        error: "Server Error"
+      });
+    }
+  }
   async getProductsByUSerID(req, res, next) {
     try {
       const { body, query, params } = req;
       const { token, id } = { ...body, ...query, ...params };
       const jwtData = jwt.verify(token, process.env.JWT_KEY);
-      if (jwtData.id !== id) throw new Error('do not logined');
+      if (jwtData.id !== id) throw new Error("do not logined");
       const product = await ProductsModel.find({ user_id: id });
       res.status(200).json({
         success: true,
