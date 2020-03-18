@@ -3,7 +3,7 @@ const dotenv = require("dotenv");
 const colors = require("colors");
 const morgan = require("morgan");
 const connectDB = require("./config/db");
-
+const cors = require("cors";)
 dotenv.config({ path: "./config/config.env" });
 
 connectDB();
@@ -11,7 +11,7 @@ const authentication = require("./routes/authentication");
 const products = require("./routes/products");
 
 const app = express();
-
+app.use(cors());
 app.use(express.json());
 
 // if (process.env.NODE_ENV === "development") {
