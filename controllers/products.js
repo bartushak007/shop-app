@@ -22,7 +22,18 @@ class Products {
 
   async updateProduct(req, res, next) {
     const { body, query, params } = req;
-    const { id, user_id } = { ...body, ...query, ...params };
+    const {
+      id,
+      user_id,
+      productName,
+      description,
+      urlImage,
+      quantity,
+      added,
+      characteristic,
+      price,
+      asset
+    } = { ...body, ...query, ...params };
     try {
       const product = await ProductsModel.find({ _id: id, user_id });
       const updatedProduct = await ProductsModel.updateOne(
@@ -42,7 +53,7 @@ class Products {
 
       res.status(200).json({
         success: true,
-        data: product
+        data: updatedProduct
       });
     } catch (e) {
       return res.status(500).json({
