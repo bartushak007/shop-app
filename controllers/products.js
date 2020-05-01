@@ -68,10 +68,10 @@ class Products {
       const { token, id } = { ...body, ...query, ...params };
       const jwtData = jwt.verify(token, process.env.JWT_KEY);
       if (jwtData.id !== id) throw new Error("do not logined");
-      const product = await ProductsModel.find({ user_id: id });
+      const products = await ProductsModel.find({ user_id: id }).sort({_id:1});
       res.status(200).json({
         success: true,
-        data: product
+        data: products
       });
     } catch (e) {
       return res.status(500).json({
@@ -91,12 +91,13 @@ class Products {
         data: product
       });
     } catch (e) {
-      return res.status(500).json({
+      return res.status(400).json({
         success: false,
-        error: "Server Error"
+        error: "Invalid product id"
       });
     }
   }
+
   async addProduct(req, res, next) {
     const { body, query, params } = req;
     try {
