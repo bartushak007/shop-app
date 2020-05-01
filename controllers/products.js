@@ -70,14 +70,14 @@ class Products {
         ...query,
         ...params,
       };
-      
+
       const jwtData = jwt.verify(token, process.env.JWT_KEY);
       if (jwtData.id !== id) throw new Error("do not logined");
       const products = await ProductsModel.find({ user_id: id })
         .sort({ added: -1 })
         .skip(page * limit)
         .limit(limit);
-      const quantity = await ProductsModel.estimatedDocumentCount({ user_id: id });
+      const quantity = await ProductsModel.countDocuments({ user_id: id });
 
       res.status(200).json({
         success: true,
