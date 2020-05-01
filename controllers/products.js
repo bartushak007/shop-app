@@ -69,8 +69,8 @@ class Products {
       const jwtData = jwt.verify(token, process.env.JWT_KEY);
       if (jwtData.id !== id) throw new Error("do not logined");
       const products = await ProductsModel.find({ user_id: id }).sort({ added: -1 })
-        // .skip(skip = 0)
-        // .limit(limit = 5)
+        .skip(skip = 0)
+        .limit(limit = 5)
         // .populate({          
         //   options: { sort: { added: -1 } },
         // });
