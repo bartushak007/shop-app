@@ -68,12 +68,12 @@ class Products {
       const { token, id, skip, limit } = { ...body, ...query, ...params };
       const jwtData = jwt.verify(token, process.env.JWT_KEY);
       if (jwtData.id !== id) throw new Error("do not logined");
-      const products = await ProductsModel.find({ user_id: id })
-        .skip(skip = 0)
-        .limit(limit = 5)
-        .populate({          
-          options: { sort: { added: -1 } },
-        });
+      const products = await ProductsModel.find({ user_id: id }).sort({ added: -1 })
+        // .skip(skip = 0)
+        // .limit(limit = 5)
+        // .populate({          
+        //   options: { sort: { added: -1 } },
+        // });
       res.status(200).json({
         success: true,
         data: products,
