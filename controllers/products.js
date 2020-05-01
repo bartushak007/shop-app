@@ -6,16 +6,16 @@ class Products {
     try {
       // const { token, id } = { ...body, ...query, ...params };
       // const jwtData = jwt.verify(token, process.env.JWT_KEY);
-      const products = await ProductsModel.find({ });
+      const products = await ProductsModel.find({});
 
       res.status(200).json({
         success: true,
-        data: products
+        data: products,
       });
     } catch (e) {
       return res.status(500).json({
         success: false,
-        error: e || "Server Error"
+        error: e || "Server Error",
       });
     }
   }
@@ -32,7 +32,7 @@ class Products {
       added,
       characteristic,
       price,
-      asset
+      asset,
     } = { ...body, ...query, ...params };
     try {
       const product = await ProductsModel.find({ _id: id, user_id });
@@ -47,36 +47,41 @@ class Products {
           added,
           characteristic,
           price,
-          asset
+          asset,
         }
       );
 
       res.status(200).json({
         success: true,
-        data: updatedProduct
+        data: updatedProduct,
       });
     } catch (e) {
       return res.status(500).json({
         success: false,
-        error: "Server Error"
+        error: "Server Error",
       });
     }
   }
   async getProductsByUSerID(req, res, next) {
     try {
       const { body, query, params } = req;
-      const { token, id } = { ...body, ...query, ...params };
+      const { token, id, skip, limit } = { ...body, ...query, ...params };
       const jwtData = jwt.verify(token, process.env.JWT_KEY);
       if (jwtData.id !== id) throw new Error("do not logined");
-      const products = await ProductsModel.find({ user_id: id }).sort({_id:1});
+      const products = await ProductsModel.find({ user_id: id })
+        .skip(skip)
+        .limit(limit)
+        .populate({          
+          options: { sort: { date: -1 } },
+        });
       res.status(200).json({
         success: true,
-        data: products
+        data: products,
       });
     } catch (e) {
       return res.status(500).json({
         success: false,
-        error: e || "Server Error"
+        error: e || "Server Error",
       });
     }
   }
@@ -88,12 +93,12 @@ class Products {
       const product = await ProductsModel.find({ _id: id });
       res.status(200).json({
         success: true,
-        data: product
+        data: product,
       });
     } catch (e) {
       return res.status(400).json({
         success: false,
-        error: "Invalid product id"
+        error: "Invalid product id",
       });
     }
   }
@@ -110,7 +115,7 @@ class Products {
         characteristic,
         price,
         asset,
-        user_id
+        user_id,
       } = { ...body, ...query, ...params };
 
       const products = await ProductsModel.find({ productName });
@@ -118,7 +123,7 @@ class Products {
       if (products.length)
         return res.status(400).json({
           success: false,
-          error: "productName alredy exist"
+          error: "productName alredy exist",
         });
 
       const addProduct = await ProductsModel.create({
@@ -130,27 +135,27 @@ class Products {
         characteristic,
         price,
         asset,
-        user_id
+        user_id,
       });
 
       const { _id } = addProduct;
 
       res.status(200).json({
         success: true,
-        data: addProduct
+        data: addProduct,
       });
     } catch (err) {
       if (err.name === "ValidationError") {
-        const messages = Object.values(err.errors).map(val => val.message);
+        const messages = Object.values(err.errors).map((val) => val.message);
 
         return res.status(400).json({
           success: false,
-          error: messages
+          error: messages,
         });
       } else {
         return res.status(500).json({
           success: false,
-          error: "Server Error"
+          error: "Server Error",
         });
       }
     }
