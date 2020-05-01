@@ -6,11 +6,21 @@ class Products {
     try {
       // const { token, id } = { ...body, ...query, ...params };
       // const jwtData = jwt.verify(token, process.env.JWT_KEY);
-      const products = await ProductsModel.find({});
-
+      const { body, query, params } = req;
+      const { page = 0, limit = 5 } = {
+        ...body,
+        ...query,
+        ...params,
+      };
+      const products = await ProductsModel.find({})
+        // .sort({ added: -1 })
+        .skip(page * limit)
+        .limit(limit);
+      const quantity = await ProductsModel.countDocuments({});
+      
       res.status(200).json({
         success: true,
-        data: products,
+        data: { products, quantity, limit, page },
       });
     } catch (e) {
       return res.status(500).json({
