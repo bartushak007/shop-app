@@ -4,8 +4,6 @@ const jwt = require("jsonwebtoken");
 class Products {
   async getProducts(req, res, next) {
     try {
-      // const { token, id } = { ...body, ...query, ...params };
-      // const jwtData = jwt.verify(token, process.env.JWT_KEY);
       const { body, query, params } = req;
       const { page = 0, limit = 5 } = {
         ...body,
@@ -17,15 +15,21 @@ class Products {
         .skip(page * limit)
         .limit(limit);
       const quantity = await ProductsModel.countDocuments({});
-      
+
       res.status(200).json({
         success: true,
-        data: { products, quantity, limit, page },
+        data: {
+          products,
+          quantity,
+          limit,
+          page,
+          sortParams: ["dateUp", "dateDown", "priceUp", "priceDown"],
+        },
       });
     } catch (e) {
       return res.status(500).json({
         success: false,
-        error: e || "Server Error",
+        error: e || { message: "Server Error" },
       });
     }
   }
@@ -34,7 +38,6 @@ class Products {
     const { body, query, params } = req;
     const {
       id,
-      user_id,
       productName,
       description,
       urlImage,
@@ -44,8 +47,14 @@ class Products {
       price,
       asset,
     } = { ...body, ...query, ...params };
+
     try {
-      const product = await ProductsModel.find({ _id: id, user_id });
+      const jwtData = jwt.verify(token, process.env.JWT_KEY);
+      const product = await ProductsModel.find({
+        _id: id,
+        user_id: jwtData.id,
+      });
+
       const updatedProduct = await ProductsModel.updateOne(
         { _id: id, user_id },
         {
@@ -68,22 +77,22 @@ class Products {
     } catch (e) {
       return res.status(500).json({
         success: false,
-        error: "Server Error",
+        error: e,
       });
     }
   }
   async getProductsByUSerID(req, res, next) {
     try {
       const { body, query, params } = req;
-      const { token, id, page = 0, limit = 5 } = {
+      const { token, page = 0, limit = 5 } = {
         ...body,
         ...query,
         ...params,
       };
 
       const jwtData = jwt.verify(token, process.env.JWT_KEY);
-      if (jwtData.id !== id) throw new Error("do not logined");
-      const products = await ProductsModel.find({ user_id: id })
+
+      const products = await ProductsModel.find({ user_id: jwtData.id })
         .sort({ added: -1 })
         .skip(page * limit)
         .limit(limit);
@@ -96,7 +105,7 @@ class Products {
     } catch (e) {
       return res.status(500).json({
         success: false,
-        error: e || "Server Error",
+        error: e || { message: "Server Error" },
       });
     }
   }
@@ -113,7 +122,7 @@ class Products {
     } catch (e) {
       return res.status(400).json({
         success: false,
-        error: "Invalid product id",
+        error: { message: "Invalid product id" },
       });
     }
   }
@@ -138,7 +147,7 @@ class Products {
       if (products.length)
         return res.status(400).json({
           success: false,
-          error: "productName alredy exist",
+          error: { message: "productName alredy exist" },
         });
 
       const addProduct = await ProductsModel.create({
@@ -170,9 +179,47 @@ class Products {
       } else {
         return res.status(500).json({
           success: false,
-          error: "Server Error",
+          error: { message: "Server Error" },
         });
       }
+    }
+  }
+
+  async deleteListOfProducts(req, res, next) {
+    const { body, query, params } = req;
+    const { ids, token } = { ...body, ...query, ...params };
+
+    try {
+      const jwtData = jwt.verify(token, process.env.JWT_KEY);
+
+      const deleted =
+        jwtData.role !== "client"
+          ? await ProductsModel.remove(
+              ...ids.reduce((acc, _id) => [...acc, { _id }], [])
+            )
+          : await ProductsModel.remove(
+              ...ids.reduce(
+                (acc, _id) => [...acc, { _id, user_id: jwtData.id }],
+                []
+              )
+            );
+
+      if (!deleted.deletedCount) {
+        return res.status(400).json({
+          success: false,
+          error: { message: "Wrong data" },
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: deleted,
+      });
+    } catch (e) {
+      return res.status(500).json({
+        success: false,
+        error: e,
+      });
     }
   }
 }

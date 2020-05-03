@@ -5,13 +5,15 @@ const {
   getProduct,
   addProduct,
   updateProduct,
-  getProductsByUSerID
+  getProductsByUSerID,
+  deleteListOfProducts
 } = require("../controllers/products");
 
 router
   .route("/")
   .get(getProducts)
-  .post(addProduct);
+  .post(addProduct)
+  .delete(deleteListOfProducts);
 
 router
   .route("/userid/:id")
