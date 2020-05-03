@@ -96,7 +96,7 @@ class Products {
         .sort({ added: -1 })
         .skip(page * limit)
         .limit(limit);
-      const quantity = await ProductsModel.countDocuments({ user_id: id });
+      const quantity = await ProductsModel.countDocuments({ user_id: jwtData.id });
 
       res.status(200).json({
         success: true,
