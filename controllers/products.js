@@ -37,6 +37,7 @@ class Products {
   async updateProduct(req, res, next) {
     const { body, query, params } = req;
     const {
+      token,
       id,
       productName,
       description,
@@ -56,7 +57,7 @@ class Products {
       });
 
       const updatedProduct = await ProductsModel.updateOne(
-        { _id: id, user_id },
+        { _id: id, user_id: jwtData.id },
         {
           ...product,
           productName,
@@ -96,7 +97,9 @@ class Products {
         .sort({ added: -1 })
         .skip(page * limit)
         .limit(limit);
-      const quantity = await ProductsModel.countDocuments({ user_id: jwtData.id });
+      const quantity = await ProductsModel.countDocuments({
+        user_id: jwtData.id,
+      });
 
       res.status(200).json({
         success: true,
@@ -193,7 +196,7 @@ class Products {
       const jwtData = jwt.verify(token, process.env.JWT_KEY);
 
       const deleted =
-        jwtData.role !== "client"
+        jwtData.role === "superUser"
           ? await ProductsModel.remove(
               ...ids.reduce((acc, _id) => [...acc, { _id }], [])
             )
